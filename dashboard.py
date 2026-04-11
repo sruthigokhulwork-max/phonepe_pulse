@@ -9,7 +9,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# ── Connect to MySQL ─────────────────────────
+#  Connect to MySQL 
 @st.cache_resource
 def get_connection():
     return mysql.connector.connect(
@@ -23,19 +23,20 @@ def run_query(query):
     conn = get_connection()
     return pd.read_sql(query, conn)
 
-# ── Header ───────────────────────────────────
+#Header 
 st.title(" PhonePe Pulse - Transaction Insights")
 st.markdown("An interactive dashboard analyzing PhonePe transaction data across India")
 
-# ── Sidebar Filters ──────────────────────────
+# Sidebar Filters 
 st.sidebar.header("🔍 Filters")
 year = st.sidebar.selectbox("Select Year", [2018, 2019, 2020, 2021, 2022, 2023, 2024])
 quarter = st.sidebar.selectbox("Select Quarter", [1, 2, 3, 4])
 
-# ════════════════════════════════════════════
+
+
 # SCENARIO 1 — Transaction Dynamics
-# ════════════════════════════════════════════
-st.header("1️⃣ Decoding Transaction Dynamics")
+
+st.header("1. Decoding Transaction Dynamics")
 
 
 # Top 10 states by transaction amount
@@ -78,10 +79,11 @@ fig3 = px.line(df3, x="year", y="total_count",
 st.plotly_chart(fig3, use_container_width=True)
 
 
-# ════════════════════════════════════════════
+
+
 # SCENARIO 2 — Device & User Engagement
-# ════════════════════════════════════════════
-st.header("2️⃣ Device Dominance & User Engagement")
+
+st.header("2.Device Dominance & User Engagement")
 
 
 # Top mobile brands
@@ -114,10 +116,10 @@ fig5 = px.bar(df5, x="total_opens", y="state", orientation='h',
 st.plotly_chart(fig5, use_container_width=True)
 
 
-# ════════════════════════════════════════════
+
 # SCENARIO 3 — Insurance Penetration
-# ════════════════════════════════════════════
-st.header("3️⃣ Insurance Penetration & Growth")
+
+st.header("3. Insurance Penetration & Growth")
 
 
 
@@ -147,10 +149,11 @@ fig7 = px.bar(df7, x="total_policies", y="state", orientation='h',
                 color="total_policies", color_continuous_scale="blues")
 st.plotly_chart(fig7, use_container_width=True)
 
-# ════════════════════════════════════════════════════════
+
+
 # SCENARIO 4 — Market Expansion
-# ════════════════════════════════════════════════════════
-st.header("4️⃣ Transaction Analysis for Market Expansion")
+
+st.header("4. Transaction Analysis for Market Expansion")
 
 
 
@@ -187,10 +190,10 @@ st.plotly_chart(fig, use_container_width=True)
 
 st.markdown("---")
 
-# ════════════════════════════════════════════════════════
+
 # SCENARIO 5 — User Engagement & Growth Strategy
-# ════════════════════════════════════════════════════════
-st.header("5️⃣ User Engagement & Growth Strategy")
+
+st.header("5. User Engagement & Growth Strategy")
 
 
 
@@ -230,51 +233,126 @@ fig = px.bar(df, x="state", y="total_users",
                 labels={"total_users":"Users","state":"State"})
 st.plotly_chart(fig, use_container_width=True)
 
+
 st.markdown("---")
 
-# # ════════════════════════════════════════════════════════
-# # SCENARIO 6 — Insurance Engagement
-# # ════════════════════════════════════════════════════════
-# st.header("6️⃣ Insurance Engagement Analysis")
+# States vs Transaction
+st.header("States vs Transactions")
 
-# col11, col12 = st.columns(2)
+state_mapping = {
+    "andaman-&-nicobar-islands": "Andaman & Nicobar",
+    "arunachal-pradesh" : "Arunachal Pradesh",
+    "assam" : "Assam",
+    "chandigarh" : "Chandigarh",
+    "tamil-nadu": "Tamil Nadu",
+    "karnataka" : "Karnataka",
+    "manipur" : "Manipur",
+    "meghalaya" : "Meghalaya",
+    "mizoram" : "Mizoram",
+    "nagaland" : "Nagaland",
+    "punjab" : "Punjab",
+    "rajasthan" : "Rajasthan",
+    "sikkim" : "Sikkim",
+    "tripura" : "Tripura",
+    "uttarakhand" : "Uttarakhand",
+    "telangana" : "Telangana",
+    "bihar" : "Bihar",
+    "kerala" : "Kerala",
+    "madhya-pradesh" : "Madhya Pradesh",
+    "gujarat" : "Gujarat",
+    "lakshadweep" : "Lakshadweep",
+    "odisha" : "Odisha",
+    "dadra-&-nagar-haveli-&-daman-&-diu" : "Dadra and Nagar Haveli and Daman and Diu",
+    "ladakh" : "Ladakh",
+    "jammu-&-kashmir" : "Jammu & Kashmir",
+    "chhattisgarh" : "Chhattisgarh",
+    "delhi" : "Delhi",
+    "goa" : "Goa",
+    "haryana" : "Haryana",
+    "himachal Pradesh" : "Himachal Pradesh",
+    "jharkhand" : "Jharkhand",
+    "tamil-nadu" : "Tamil Nadu",
+    "uttar-pradesh" : "Uttar Pradesh",
+    "west-bengal" : "West Bengal",
+    "andhra-pradesh" : "Andhra Pradesh",
+    "puducherry" : "Puducherry",
+    "maharashtra" : "Maharashtra",
+}
 
-# with col11:
-#     df = run_query(f"""
-#         SELECT district_name, SUM(insurance_count) AS total_policies
-#         FROM map_insurance
-#         WHERE year={year} AND quarter={quarter}
-#         GROUP BY district_name
-#         ORDER BY total_policies DESC
-#         LIMIT 10
-#     """)
-#     fig = px.bar(df, x="total_policies", y="district_name", orientation='h',
-#                  title=f"Top 10 Districts by Insurance ({year} Q{quarter})",
-#                  color="total_policies",
-#                  color_continuous_scale="blues",
-#                  labels={"total_policies":"Policies","district_name":"District"})
-#     st.plotly_chart(fig, use_container_width=True)
+df = run_query(f'''
+               SELECT state, 
+               SUM(transaction_count) AS total_transactions
+               FROM aggregated_transactions
+               WHERE year={year} AND quarter={quarter}
+               GROUP BY state
+               ''')
+df['state'] = df['state'].replace(state_mapping)
+fig = px.choropleth(
+    df,
+    geojson="https://gist.githubusercontent.com/jbrobst/56c13bbbf9d97d187fea01ca62ea5112/raw/e388c4cae20aa53cb5090210a42ebb9b765c0a36/india_states.geojson",
+    featureidkey='properties.ST_NM',
+    locations='state',
+    color='total_transactions',
+    color_continuous_scale='Blues'
+)
 
-# with col12:
-#     df = run_query(f"""
-#         SELECT state,
-#                SUM(insurance_count)  AS total_count,
-#                SUM(insurance_amount) AS total_amount
-#         FROM map_insurance
-#         WHERE year={year} AND quarter={quarter}
-#         GROUP BY state
-#         ORDER BY total_count DESC
-#     """)
-#     fig = px.scatter(df, x="total_count", y="total_amount",
-#                      text="state",
-#                      title="Insurance Count vs Amount by State",
-#                      color="total_amount",
-#                      color_continuous_scale="blues",
-#                      labels={"total_count":"Insurance Count",
-#                              "total_amount":"Amount (₹)"})
-#     fig.update_traces(textposition='top center')
-#     st.plotly_chart(fig, use_container_width=True)
+fig.update_geos(fitbounds="locations", visible=False)
+fig.update_layout(height=600)
+st.plotly_chart(fig, use_container_width=True)
 
-# ── Footer ───────────────────────────────────────────────
 st.markdown("---")
+
+st.header("STATE VS INSURANCE")
+
+
+df = run_query(f'''
+               SELECT state, 
+               SUM(insurance_count) AS total_insured
+               FROM aggregated_insurance
+               WHERE year={year} AND quarter={quarter}
+               GROUP BY state
+               ''')
+df['state'] = df['state'].replace(state_mapping)
+
+fig = px.choropleth(
+    df,
+    geojson="https://gist.githubusercontent.com/jbrobst/56c13bbbf9d97d187fea01ca62ea5112/raw/e388c4cae20aa53cb5090210a42ebb9b765c0a36/india_states.geojson",
+    featureidkey='properties.ST_NM',
+    locations='state',
+    color='total_insured',
+    color_continuous_scale='Blues'
+)
+
+fig.update_geos(fitbounds="locations", visible=False)
+fig.update_layout(height=600)
+st.plotly_chart(fig, use_container_width=True)
+
+st.markdown("---")
+
+st.header("STATE VS USERS")
+
+
+df = run_query(f'''
+               SELECT state, 
+               SUM(user_count) AS total_users
+               FROM aggregated_users
+               WHERE year={year} AND quarter={quarter}
+               GROUP BY state
+               ''')
+df['state'] = df['state'].replace(state_mapping)
+
+fig = px.choropleth(
+    df,
+    geojson="https://gist.githubusercontent.com/jbrobst/56c13bbbf9d97d187fea01ca62ea5112/raw/e388c4cae20aa53cb5090210a42ebb9b765c0a36/india_states.geojson",
+    featureidkey='properties.ST_NM',
+    locations='state',
+    color='total_users',
+    color_continuous_scale='Blues'
+)
+
+fig.update_geos(fitbounds="locations", visible=False)
+fig.update_layout(height=600)
+st.plotly_chart(fig, use_container_width=True)
+
+
 st.markdown("Built using Streamlit | Data: PhonePe Pulse GitHub")
